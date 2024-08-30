@@ -1,0 +1,20 @@
+[project]
+name = "fast-drive"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "a129924", email = "a129924@gmail.com"},
+]
+dependencies = [
+    "fastapi[standard]>=0.112.2",
+    "pydantic-settings>=2.4.0",
+    "pyjwt>=2.9.0",
+    "passlib[bcrypt]>=1.7.4",
+]
+requires-python = "==3.10.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
