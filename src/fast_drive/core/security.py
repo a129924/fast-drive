@@ -36,3 +36,12 @@ def get_password_hash(password: str) -> str:
         str: The hashed password.
     """
     return create_password_context().hash(password)
+
+
+def create_oauth2_scheme(token_url: str, scopes: dict[str, str]):
+    from fastapi.security import OAuth2PasswordBearer
+
+    return OAuth2PasswordBearer(
+        tokenUrl=token_url,
+        scopes=scopes,
+    )
