@@ -21,7 +21,7 @@ def get_user_static_path(username: str) -> str:
 async def create_file(
     current_user: Annotated[User, Security(get_current_user, scopes=["files"])],
     file: UploadFile = File(...),
-):
+) -> FileResponse:
     """
     Upload a file
 
@@ -57,7 +57,7 @@ async def create_files(
     files: Annotated[
         list[UploadFile], File(description="Multiple files as UploadFile")
     ],
-):
+) -> FilesResponse:
     """
     Upload multiple files
 
@@ -68,14 +68,14 @@ async def create_files(
     Returns:
         FilesResponse: Files
     """
-    from ....core.disk import asnyc_copy_files, create_folder
+    from ....core.disk import async_copy_files, create_folder
 
     root_path = get_user_static_path(current_user.username)
     create_folder(root_path)
 
-    filenames = await asnyc_copy_files(files=files, root_path=root_path)
+    filenames = await async_copy_files(files=files, root_path=root_path)
 
-    return {"files": filenames, "user": current_user}
+    return {"files": filenames, "user": current_user}  # type: ignore
 
 
 @router.get(
@@ -96,7 +96,7 @@ async def create_files(
 )
 async def get_files_by_self(
     current_user: Annotated[User, Security(get_current_user, scopes=["files"])],
-):
+) -> FilesResponse:
     """
     Get files by self
 
@@ -116,9 +116,9 @@ async def get_files_by_self(
 
         files = listdir(path=root_path)
 
-        return {"files": files, "user": current_user}
+        return {"files": files, "user": current_user}  # type: ignore
     except FileNotFoundError:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Not found directory for {current_user.username}",
         ) from FileNotFoundError
