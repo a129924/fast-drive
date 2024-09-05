@@ -33,9 +33,10 @@ def copy_file(file: BinaryIO, path: str, filename: str) -> str:
     Returns:
         str: The name of the file that was copied.
     """
+    from os.path import join
     from shutil import copyfileobj
 
-    with open(f"{path}/{filename}", "wb") as f:
+    with open(join(path, filename), "wb") as f:
         copyfileobj(file, f)
 
     return filename
@@ -56,7 +57,7 @@ async def async_copy_file(file: BinaryIO, path: str, filename: str) -> str:
     return await run_in_threadpool(copy_file, file, path, filename)
 
 
-async def asnyc_copy_files(files: list[UploadFile], root_path: str) -> list[str]:
+async def async_copy_files(files: list[UploadFile], root_path: str) -> list[str]:
     """
     Copy multiple files to the given path.
 
