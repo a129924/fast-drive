@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Literal
 
 from ..schema.auth import User
 from .security import create_oauth2_scheme, verify_password
@@ -22,7 +22,7 @@ def authenticate_user(
         str,  # username
         User,  # user info
     ],
-) -> User | bool:
+) -> User | Literal[False]:
     """
     Authenticate a user.
 

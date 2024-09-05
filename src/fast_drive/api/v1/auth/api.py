@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Security
 from fastapi.security import OAuth2PasswordRequestForm
@@ -14,13 +14,13 @@ router = APIRouter(prefix="/auth")
 def login_access_token(from_data: OAuth2PasswordRequestForm = Depends()) -> Token:
     from ....core.auth import authenticate_user
 
-    user: User | None = authenticate_user(
+    user: User | Literal[False] = authenticate_user(
         username=from_data.username,
         password=from_data.password,
         db=fake_users_db,
     )
 
-    if not user:
+    if user is False:
         from fastapi import HTTPException
 
         raise HTTPException(status_code=400, detail="Incorrect username or password")
