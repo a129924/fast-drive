@@ -84,6 +84,15 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 def decode_token(token: str) -> dict[str, Any]:
+    """
+    Decode a token.
+
+    Args:
+        token (str): The token to decode.
+
+    Returns:
+        dict[str, Any]: The decoded token.
+    """
     from jwt import decode
 
     from .config import ALGORITHM, SECRET_KEY
