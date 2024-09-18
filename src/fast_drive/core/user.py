@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from jwt import InvalidTokenError
 from pydantic import ValidationError
@@ -10,21 +10,45 @@ from ..model.fake_model import fake_users_db
 from ..schema.auth import User
 
 
-async def get_current_user(
-    security_scopes: SecurityScopes,
-    token: Annotated[str, Depends(OAUTH2_SCHEME)],
-) -> User:
+def create_authenticate_value(security_scopes: SecurityScopes) -> str:
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scopes}"'
     else:
         authenticate_value = "Bearer"
 
+    return authenticate_value
+
+
+def create_credentials_exception(authenticate_value):
     from fastapi import HTTPException, status
 
-    credentials_exception = HTTPException(
+    return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": authenticate_value},
+    )
+
+
+def check_scope(
+    user_scopes: list[str],
+    security_spoces: list[str],
+) -> bool:
+    user_scopes_set = set(user_scopes)
+
+    for security_spoce in security_spoces:
+        if security_spoce not in user_scopes_set:
+            return False
+
+    return True
+
+
+async def get_current_user(
+    security_scopes: SecurityScopes,
+    token: Annotated[str, Depends(OAUTH2_SCHEME)],
+) -> User:
+    authenticate_value = create_authenticate_value(security_scopes=security_scopes)
+    credentials_exception = create_credentials_exception(
+        authenticate_value=authenticate_value
     )
 
     try:
@@ -50,13 +74,18 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
 
-    for scope in security_scopes.scopes:
-        if scope not in token_data.scopes:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": authenticate_value},
-            )
+    if (
+        check_scope(
+            user_scopes=token_data.scopes,
+            security_spoces=security_scopes.scopes,
+        )
+        is False
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Not enough permissions",
+            headers={"WWW-Authenticate": authenticate_value},
+        )
 
     return user
 
